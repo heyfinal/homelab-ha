@@ -1,0 +1,82 @@
+# Home Assistant Configuration - Auto-generated from live network scan
+# HA 2026.6.1  |  Kali iMac @ 192.168.1.230
+#
+# NOTES:
+# - Ping sensors: UI-only now (config_flow). Add via Settings → Add Integration → "Ping (ICMP)"
+# - System Monitor: UI-only now. Add via Settings → Add Integration → "System Monitor"
+# - Fast.com speed test: UI-only now. Add via Settings → Add Integration → "Fast.com"
+# - Blink: UI-only. Add via Settings → Add Integration → "Blink"
+# - Everything below is YAML-configured
+
+homeassistant:
+  name: "HomeLab"
+  latitude: 0.0
+  longitude: 0.0
+  elevation: 0
+  unit_system: imperial
+  time_zone: America/Chicago
+  country: US
+  external_url: "http://192.168.1.230:8123"
+  internal_url: "http://192.168.1.230:8123"
+  allowlist_external_dirs:
+    - "/config/www"
+    - "/config/media"
+  media_dirs:
+    media: "/config/media"
+
+default_config:
+
+frontend:
+  themes: !include_dir_merge_named themes/
+
+discovery:
+
+logbook:
+
+history:
+
+system_health:
+
+# ── Command-line sensors ──
+command_line:
+  - sensor:
+      name: "Kali iMac WiFi SSID"
+      command: "iwgetid -r 2>/dev/null || echo 'disconnected'"
+      scan_interval: 300
+  - sensor:
+      name: "Kali iMac WiFi Signal"
+      command: '/sbin/iwconfig wlan0 2>/dev/null | grep -oP "Signal level=\\K-?[0-9]+" || echo "0"'
+      unit_of_measurement: "dBm"
+      scan_interval: 300
+  - sensor:
+      name: "Kali Mini Uptime"
+      command: "ssh -o ConnectTimeout=3 -o BatchMode=yes daniel@192.168.1.212 'uptime -p' 2>/dev/null || echo 'unreachable'"
+      scan_interval: 600
+  - sensor:
+      name: "BGW320 Gateway Uptime"
+      command: "curl -s --max-time 5 http://192.168.1.254/ 2>/dev/null | grep -oP 'Up Time: ' | head -1 || echo 'unreachable'"
+      scan_interval: 600
+
+# ── MQTT ──
+mqtt:
+  sensor:
+    - name: "MQTT Broker Status"
+      state_topic: "$SYS/broker/uptime"
+      unit_of_measurement: "s"
+      value_template: "{{ value }}"
+
+# ── ESP32-CAM REST commands ──
+rest_command:
+  esp32cam_snapshot:
+    url: "http://192.168.1.241/capture"
+    method: GET
+  esp32cam_ir_on:
+    url: "http://192.168.1.241/control?var=ir_mode&val=1"
+    method: GET
+  esp32cam_ir_off:
+    url: "http://192.168.1.241/control?var=ir_mode&val=0"
+    method: GET
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
